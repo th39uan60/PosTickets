@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tickets-app
+spec:
+  selector:
+    matchLabels:
+      run: tickets-app
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        run: tickets-app
+    spec:
+      containers:
+      # el nombre de la imagen (en este caso dentro de docker hub)
+      - image: th39uan60/pos_tickets
+        # aquí se definen las recursos que usará cada POD a desplegar de esta aplicación
+        resources:
+            limits:
+              cpu: 100m # miliCPUs / milicores => 100/1,000 = 10% de un Core 
+              memory: 500Mi # Gi = GB, Mi = MB, Ki = KB => 1GB
+            requests:
+              cpu: 50m # 5% de un Core
+              memory: 100Mi # 100MB
+        ports:
+        # puerto de salida del contenedor
+        - containerPort: 80
+        name: tickets-container
+        # aquí se definen los "secrets" que se usarán como variables de entorno
+        env:
+        - name: KAFKAURL
+          valueFrom:
+            secretKeyRef:
+              name: pos-secrets
+              key: kafka_service_url
+        - name: KAFKATICKETS
+          valueFrom:
+            secretKeyRef:
+              name: pos-secrets
+              key: kafka_ticket_topic
