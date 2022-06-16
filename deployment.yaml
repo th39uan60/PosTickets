@@ -25,7 +25,7 @@ spec:
               memory: 100Mi # 100MB
         ports:
         # puerto de salida del contenedor
-        - containerPort: 80
+        - containerPort: 5000
         name: tickets-container
         # aquí se definen los "secrets" que se usarán como variables de entorno
         env:

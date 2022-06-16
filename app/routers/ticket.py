@@ -7,8 +7,9 @@ from datetime import datetime
 import json
 from fastapi import (APIRouter, HTTPException)
 from pykafka import KafkaClient
+from pykafka.common import OffsetType
 from ..security import decodificar_base64
-from ..schemas.responses import (TicketResponse, TicketSummary)
+from ..schemas.responses import (TicketResponse, TicketDetail)
 
 router = APIRouter()
 
@@ -25,7 +26,8 @@ def consultar_tickets(fecha_inicio: datetime):
 
         client = KafkaClient(hosts=KAFKA_URL)
         cons = client.topics[TICKETS_TOPIC].get_simple_consumer(
-            consumer_timeout_ms=5000
+            consumer_timeout_ms=1000,
+            auto_offset_reset=OffsetType.EARLIEST
             )
 
         cons.consume()
@@ -34,17 +36,28 @@ def consultar_tickets(fecha_inicio: datetime):
         for mensaje in cons:
             if mensaje.value is not None:
                 tck = json.loads(mensaje.value)
-                ticket = TicketSummary(
-                    fecha=float(tck["d"]),
-                    cte_id=0, total=0)
+                fecha=float(tck["d"])
 
                 # se filtran por la fecha de inicio
-                if ticket.fecha < fecha_inicio.timestamp():
+                if fecha < fecha_inicio.timestamp():
                     continue
 
-                ticket.cte_id = int(tck["c"])
-                ticket.total = float(tck["t"])
-                response.tickets.append(ticket)
+                response.tickets.append(f"---INICIO TICKET---")
+                response.tickets.append(f"--------------------")
+                response.tickets.append(f"POS-{fecha}")
+                response.tickets.append(f"Cte:      {tck['c']}")
+                response.tickets.append(f"--------------------")
+
+                for prod in tck['p']:
+                    response.tickets.append(f"SKU{prod}")
+
+                response.tickets.append(f"--------------------")
+                response.tickets.append(f"Subtotal: ${tck['s']}")
+                response.tickets.append(f"IVA:      ${tck['f']}")
+                response.tickets.append(f"Total:    ${tck['t']}")
+
+                response.tickets.append(f"--------------------")
+                response.tickets.append(f"---FIN TICKET---")
 
     except Exception as ex:
         raise HTTPException(status_code=500, detail=str(ex)) from ex

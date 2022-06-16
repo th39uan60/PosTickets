@@ -11,6 +11,6 @@ spec:
     # puerto de comunicación del servicio (dentro del cluster)
     port: 5000
     # puerto de comunicación (salida) del pod
-    targetPort: 80
+    targetPort: 5000
     # puerto externo (fuera del cluster) del servicio, rango: 30,000 - 32,767
     nodePort: 32001

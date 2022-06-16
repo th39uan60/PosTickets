@@ -14,8 +14,8 @@ from pydantic import BaseModel
 @dataclass
 class TicketDetail(BaseModel):
     """Representa todos los datos de un ticket"""
-    fecha: datetime
-    prods: list[int]
+    fecha: float
+    prods: Optional[list[int]]
     cte_id: Optional[int] = 0
     subtotal: float
     impuesto: float
@@ -26,20 +26,9 @@ class TicketDetail(BaseModel):
 
 
 @dataclass
-class TicketSummary(BaseModel):
-    """Representa los datos principales de un ticket"""
-    fecha: float
-    cte_id: Optional[int] = 0
-    total: float
-
-    def __init__(__pydantic_self__, **data: Any) -> None:
-        super().__init__(**data)
-
-
-@dataclass
 class TicketResponse(BaseModel):
-    """Representa la respuesta de la consulta de tickets"""
-    tickets: Optional[list[TicketSummary]]
+    """Representa las líneas de los tickets a imprimir"""
+    tickets: Optional[list[str]]
 
     def __init__(__pydantic_self__, **data: Any) -> None:
         super().__init__(**data)
